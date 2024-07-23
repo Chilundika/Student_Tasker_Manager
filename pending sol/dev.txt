@@ -1,0 +1,51 @@
+<?php
+include 'db.php';
+
+$admin_username = 'admin';
+$admin_password = password_hash('admin123', PASSWORD_DEFAULT); // Default password
+
+// Check if admin already exists
+$sql = "SELECT * FROM users WHERE username='$admin_username'";
+$result = $conn->query($sql);
+
+if ($result->num_rows == 0) {
+    // Insert default admin user
+    $sql = "INSERT INTO users (username, password, role) VALUES ('$admin_username', '$admin_password', 'admin')";
+    if ($conn->query($sql) === TRUE) {
+        echo "Admin user created successfully.";
+    } else {
+        echo "Error creating admin user: " . $conn->error;
+    }
+} else {
+    echo "Admin user already exists.";
+}
+
+$conn->close();
+?>
+
+
+-----------------------------------------------
+from index.php:
+
+       <!--section id="tasks">
+            <h2>Tasks</h2>
+            <img src="images/tasks.png" alt="tasks" width="100px" height="100px">
+            <div id="task-list"></div>
+        </!--section><br>
+        <section id="subjects">
+            <h2>Subjects</h2>
+            <img src="images/modules.png" alt="tasks" width="100px" height="100px">
+            <div id="subject-list"></div>
+        </section><br>
+        <section-- id="progress-chart">
+    <h2>Progress Chart</h2>
+    <img src="images/charts.png" alt="tasks" width="100px" height="100px">
+    <canvas id="myChart"></canvas>
+</section-->
+
+FOOTER: 
+-----------------------------------------------
+ <footer style="background-color: #45a049;">
+        &copy; 2024 TaskEd. All rights reserved.
+ </footer>
+-----------------------------------------------

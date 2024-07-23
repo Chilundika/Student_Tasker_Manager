@@ -1,0 +1,134 @@
+<!--This lecturer_portal has an issue with retrieving the student data upon selecting the students username-->
+<!--I used XAMPP for this, database name "tasked", if you can find the error, kindly resolve! thanks!-->
+
+
+
+
+
+<!--
+<!?php
+session_start();
+include 'db.php';
+
+if ($_SESSION['role'] != 'lecturer') {
+    header("Location: login.php");
+    exit();
+}
+
+$username = $_SESSION['username'];
+
+// Fetch students
+$sql_students = "SELECT id, username FROM students";
+$result_students = $conn->query($sql_students);
+
+// Check for student selection
+$selected_student_id = isset($_POST['student_id']) ? $_POST['student_id'] : null;
+$student_info = null;
+$group_assignments = [];
+
+if ($selected_student_id) {
+    // Fetch student info
+    $sql_student_info = "SELECT st.username, st.module, st.task 
+                         FROM student_tasks st
+                         JOIN students s ON st.student_id = s.id
+                         WHERE st.student_id = '$selected_student_id'";
+    $result_student_info = $conn->query($sql_student_info);
+    
+    // Check if query was successful
+    if ($result_student_info === FALSE) {
+        echo "Error fetching student info: " . $conn->error;
+    } else {
+        $student_info = $result_student_info->fetch_assoc();
+    }
+
+    // Fetch group assignments
+    $sql_group_assignments = "SELECT module, group_name, completion_percentage 
+                              FROM group_assignments 
+                              WHERE student_id = '$selected_student_id'";
+    $result_group_assignments = $conn->query($sql_group_assignments);
+    while ($row = $result_group_assignments->fetch_assoc()) {
+        $group_assignments[] = $row;
+    }
+}
+
+// Handle comments
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['comment'])) {
+    $comment = $conn->real_escape_string($_POST['comment']);
+    $sql_comment = "INSERT INTO comments (student_id, comment) VALUES ('$selected_student_id', '$comment')";
+    if ($conn->query($sql_comment) === TRUE) {
+        echo "Comment added successfully.";
+    } else {
+        echo "Error adding comment: " . $conn->error;
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lecturer Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome, <?php echo $username; ?></h1>
+        <a href="logout.php">Logout</a>
+    </header>
+    <main>
+        <h2>Select a Student</h2>
+        <form method="POST">
+            <select name="student_id" onchange="this.form.submit()">
+                <option value="">Select a student</option>
+                <?php while ($row = $result_students->fetch_assoc()): ?>
+                    <option value="<?php echo $row['id']; ?>" <?php echo ($selected_student_id == $row['id']) ? 'selected' : ''; ?>>
+                        <?php echo $row['username']; ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+        </form>
+
+        <?php if ($selected_student_id && $student_info): ?>
+            <h2>Student Information</h2>
+            <table>
+                <tr>
+                    <th>Username</th>
+                    <th>Module</th>
+                    <th>Task</th>
+                </tr>
+                <tr>
+                    <td><?php echo $student_info['username']; ?></td>
+                    <td><?php echo $student_info['module']; ?></td>
+                    <td><?php echo $student_info['task']; ?></td>
+                </tr>
+            </table>
+
+            <h2>Group Assignments</h2>
+            <table>
+                <tr>
+                    <th>Module</th>
+                    <th>Group</th>
+                    <th>Completion Percentage</th>
+                </tr>
+                <?php foreach ($group_assignments as $assignment): ?>
+                    <tr>
+                        <td><?php echo $assignment['module']; ?></td>
+                        <td><?php echo $assignment['group_name']; ?></td>
+                        <td><?php echo $assignment['completion_percentage']; ?>%</td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+
+            <h2>Add Comment</h2>
+            <form method="POST">
+                <textarea name="comment" rows="4" cols="50" required></textarea><br>
+                <input type="submit" value="Add Comment">
+            </form>
+        <?php endif; ?>
+    </main>
+
+    <footer>
+        &copy; 2024 TaskEd. All rights reserved.
+    </footer>
+</body>
+</html>
